@@ -32,7 +32,7 @@ module FloatLdo:
     r_in_shunt2.value = "0.5R"
 
     r_set = new Resistor
-    r_set.footprint = "R1206"
+    r_set.footprint = "R0603"
     c_set = new Capacitor
     c_set.footprint = "C0805"
 
