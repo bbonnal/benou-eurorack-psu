@@ -88,6 +88,8 @@ module FloatLdo:
     d_protect_neg.CATODE ~ ldo.OUT
     d_protect_neg.ANODE ~ power_out.voltage_negative
 
+    ldo.OUT ~ power_out.voltage_positive
+
 
 
 
@@ -159,8 +161,8 @@ module BenouEurorackPsu:
     float_5v_positive.power_out.voltage_positive ~ V5p
     float_5v_positive.power_out.voltage_negative ~ V0
 
-    v12p_term ~ V12p
-    v12n_term ~ V12n
-    v5p_term ~ V5p
-    v0_term ~ V0
+    v12p_term.conn ~ V12p
+    v12n_term.conn ~ V12n
+    v5p_term.conn ~ V5p
+    v0_term.conn ~ V0
 
