@@ -17,6 +17,22 @@ component PWR263S_35_R500J:
 
     footprint = "TO-263-2"
 
+component IRM_30_15:
+
+    signal L ~ pin 1
+    signal N ~ pin 2
+    signal Vp ~ pin 3
+    signal Vn ~ pin 4
+    footprint = "IRM-30-15"
+
+component PSK_30D_9:
+
+    signal L ~ pin 1
+    signal N ~ pin 2
+    signal Vp ~ pin 3
+    signal Vn ~ pin 4
+    footprint = "PSK-30D-9"
+
 
 module FloatLdo:
 
@@ -32,7 +48,9 @@ module FloatLdo:
     r_in_shunt2.value = "0.5R"
 
     r_set = new Resistor
-    r_set.footprint = "R0603"
+    r_set.footprint = "R1210"
+    r_set.mpn = "NA"
+
     c_set = new Capacitor
     c_set.footprint = "C0805"
 
@@ -81,7 +99,43 @@ module FloatLdo_12V from FloatLdo:
 
 module BenouEurorackPsu:
 
+    signal V12p
+    signal V0
+    signal V5p
+    signal V12n
 
+    signal L
+    signal N
+    signal PE
+
+    #floating LDOS
     float_12v_positive = new FloatLdo_12V
-
     float_12v_negative = new FloatLdo_12V
+    float_5v_positive = new FloatLdo_5V
+
+    #isolated AC/DC converters
+    switch_reg_pos = new IRM_30_15
+    switch_reg_neg = new IRM_30_15
+    switch_reg_5v = new PSK_30D_9
+
+    L ~ switch_reg_pos.L
+    N ~ switch_reg_pos.N
+    switch_reg_pos.Vp ~ float_12v_positive.power_in.voltage_positive
+    switch_reg_pos.Vn ~ float_12v_positive.power_in.voltage_negative
+    float_12v_positive.power_out.voltage_positive ~ V12p
+    float_12v_positive.power_out.voltage_negative ~ V0
+
+    L ~ switch_reg_neg.L
+    N ~ switch_reg_neg.N
+    switch_reg_neg.Vp ~ float_12v_negative.power_in.voltage_positive
+    switch_reg_neg.Vn ~ float_12v_negative.power_in.voltage_negative
+    float_12v_negative.power_out.voltage_positive~ V0
+    float_12v_negative.power_out.voltage_negative~ V12n
+
+    L ~ switch_reg_5v.L
+    N ~ switch_reg_5v.N
+    switch_reg_5v.Vp ~ float_5v_positive.power_in.voltage_positive
+    switch_reg_5v.Vn ~ float_5v_positive.power_in.voltage_negative
+    float_5v_positive.power_out.voltage_positive ~ V5p
+    float_5v_positive.power_out.voltage_negative ~ V0
+

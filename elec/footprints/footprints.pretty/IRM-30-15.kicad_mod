@@ -1,10 +1,9 @@
-
-(footprint CONV_IRM-30-15 (layer F.Cu) (tedit 6581C9BC)
+(footprint IRM-30-15 (layer F.Cu) (tedit 6581C9BC)
   (descr "")
   (fp_text reference REF** (at -29.845 -21.209 0) (layer F.SilkS)
     (effects (font (size 1.4 1.4) (thickness 0.15)))
   )
-  (fp_text value CONV_IRM-30-15 (at -21.844 20.701 0) (layer F.Fab)
+  (fp_text value IRM-30-15 (at -21.844 20.701 0) (layer F.Fab)
     (effects (font (size 1.4 1.4) (thickness 0.15)))
   )
   (pad 1 thru_hole rect (at -30.75 -15.0) (size 1.86 1.86) (drill 1.24) (layers *.Cu *.Mask) (solder_mask_margin 0.102))
