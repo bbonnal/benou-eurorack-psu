@@ -1,24 +1,14 @@
 import Resistor from "generics/resistors.ato"
 import Capacitor from "generics/capacitors.ato"
 import Diode from "generics/diodes.ato"
-import LT3083EQ_PBF from "LT3083EQ#PBF.ato"
-import Power from "generics/interfaces.ato"
-import ES3J_C241736 from "ES3J_C241736.ato"
+import FloatPower from "generics/interfaces.ato"
 import Input_Spade_63849_1 from "63849-1.ato"
 import Output_Screw_Terminal_T34001 from "T34001.ato"
+import LDOFloat12V from "regulators/regulators.ato"
+import LDOFloat5V from "regulators/regulators.ato"
 
-interface FloatPowerInterface:
-    signal voltage_positive
-    signal voltage_negative
 
-component PWR263S_35_R500J:
-
-    signal p1 ~ pin 1
-    signal p2 ~ pin 3
-    signal sink ~ pin 2
-
-    footprint = "TO-263-2"
-
+#definition of the AC/DC switching regulators
 component IRM_30_15:
 
     signal L ~ pin 1
@@ -38,71 +28,6 @@ component PSK_30D_9:
 
 
 
-module FloatLdo:
-
-    power_in = new FloatPowerInterface
-    power_out = new FloatPowerInterface
-
-    power_in.voltage_negative ~ power_out.voltage_negative
-
-    r_in_shunt1 = new PWR263S_35_R500J
-    r_in_shunt2 = new PWR263S_35_R500J
-
-    r_in_shunt1.value = "0.5R"
-    r_in_shunt2.value = "0.5R"
-
-    r_set = new Resistor
-    r_set.footprint = "R1210"
-    r_set.mpn = "NA"
-
-    c_set = new Capacitor
-    c_set.footprint = "C0805"
-
-    c_set.value = "10pF"
-
-
-    ldo = new LT3083EQ_PBF
-
-    #diodes to prevent bacward currents throught the ldo due to floating during startup
-    d_protect_pos = new ES3J_C241736
-    d_protect_neg = new ES3J_C241736
-
-    #power input through shunts
-    power_in.voltage_positive ~ r_in_shunt1.p1
-    r_in_shunt1.p2 ~ r_in_shunt2.p1
-    r_in_shunt2.p2 ~ ldo.IN
-
-    #direct power input for internal current source
-    power_in.voltage_positive ~ ldo.VCONTROL
-
-    #voltage output setting
-    ldo.SET ~ r_set.p1
-    ldo.SET ~ c_set.p1
-    r_set.p2 ~ power_in.voltage_negative
-    c_set.p2 ~ power_in.voltage_negative
-    
-    #anti backwards current diodes
-    d_protect_pos.CATODE ~ldo.IN
-    d_protect_pos.ANODE ~ ldo.OUT
-
-    d_protect_neg.CATODE ~ ldo.OUT
-    d_protect_neg.ANODE ~ power_out.voltage_negative
-
-    ldo.OUT ~ power_out.voltage_positive
-
-
-
-
-
-module FloatLdo_5V from FloatLdo:
-
-    r_set.value ="100k"
-
-module FloatLdo_12V from FloatLdo:
-
-    r_set.value ="240k"
-
-
 module BenouEurorackPsu:
 
     signal V12p
@@ -115,9 +40,9 @@ module BenouEurorackPsu:
     signal PE
 
     #floating LDOS
-    float_12v_positive = new FloatLdo_12V
-    float_12v_negative = new FloatLdo_12V
-    float_5v_positive = new FloatLdo_5V
+    float_12v_positive = new LDOFloat12V
+    float_12v_negative = new LDOFloat12V
+    float_5v_positive = new LDOFloat5V
 
     #isolated AC/DC converters
     switch_reg_pos = new IRM_30_15
@@ -142,24 +67,24 @@ module BenouEurorackPsu:
 
     L ~ switch_reg_pos.L
     N ~ switch_reg_pos.N
-    switch_reg_pos.Vp ~ float_12v_positive.power_in.voltage_positive
-    switch_reg_pos.Vn ~ float_12v_positive.power_in.voltage_negative
-    float_12v_positive.power_out.voltage_positive ~ V12p
-    float_12v_positive.power_out.voltage_negative ~ V0
+    switch_reg_pos.Vp ~ float_12v_positive.power_in.v_pos
+    switch_reg_pos.Vn ~ float_12v_positive.power_in.v_neg
+    float_12v_positive.power_out.v_pos ~ V12p
+    float_12v_positive.power_out.v_neg ~ V0
 
     L ~ switch_reg_neg.L
     N ~ switch_reg_neg.N
-    switch_reg_neg.Vp ~ float_12v_negative.power_in.voltage_positive
-    switch_reg_neg.Vn ~ float_12v_negative.power_in.voltage_negative
-    float_12v_negative.power_out.voltage_positive~ V0
-    float_12v_negative.power_out.voltage_negative~ V12n
+    switch_reg_neg.Vp ~ float_12v_negative.power_in.v_pos
+    switch_reg_neg.Vn ~ float_12v_negative.power_in.v_neg
+    float_12v_negative.power_out.v_pos~ V0
+    float_12v_negative.power_out.v_neg~ V12n
 
     L ~ switch_reg_5v.L
     N ~ switch_reg_5v.N
-    switch_reg_5v.Vp ~ float_5v_positive.power_in.voltage_positive
-    switch_reg_5v.Vn ~ float_5v_positive.power_in.voltage_negative
-    float_5v_positive.power_out.voltage_positive ~ V5p
-    float_5v_positive.power_out.voltage_negative ~ V0
+    switch_reg_5v.Vp ~ float_5v_positive.power_in.v_pos
+    switch_reg_5v.Vn ~ float_5v_positive.power_in.v_neg
+    float_5v_positive.power_out.v_pos ~ V5p
+    float_5v_positive.power_out.v_neg ~ V0
 
     v12p_term.conn ~ V12p
     v12n_term.conn ~ V12n

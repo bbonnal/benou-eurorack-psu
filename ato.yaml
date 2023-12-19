@@ -4,3 +4,4 @@ builds:
     entry: elec/src/benou-eurorack-psu.ato:BenouEurorackPsu
 dependencies:
 - generics
+- regulators
