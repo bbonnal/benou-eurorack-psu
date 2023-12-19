@@ -4,6 +4,8 @@ import Diode from "generics/diodes.ato"
 import LT3083EQ_PBF from "LT3083EQ#PBF.ato"
 import Power from "generics/interfaces.ato"
 import ES3J_C241736 from "ES3J_C241736.ato"
+import Input_Spade_63849_1 from "63849-1.ato"
+import Output_Screw_Terminal_T34001 from "T34001.ato"
 
 interface FloatPowerInterface:
     signal voltage_positive
@@ -32,6 +34,8 @@ component PSK_30D_9:
     signal Vp ~ pin 3
     signal Vn ~ pin 4
     footprint = "PSK-30D-9"
+
+
 
 
 module FloatLdo:
@@ -118,6 +122,22 @@ module BenouEurorackPsu:
     switch_reg_neg = new IRM_30_15
     switch_reg_5v = new PSK_30D_9
 
+    #input terminals
+    L_term = new Input_Spade_63849_1
+    N_term = new Input_Spade_63849_1
+    PE_term = new Input_Spade_63849_1
+
+    #output terminals
+    v12p_term = new Output_Screw_Terminal_T34001
+    v12n_term = new Output_Screw_Terminal_T34001
+    v5p_term = new Output_Screw_Terminal_T34001
+    v0_term = new Output_Screw_Terminal_T34001
+
+    L_term.conn ~ L
+    N_term.conn ~ N
+    PE_term.conn ~ PE 
+
+
     L ~ switch_reg_pos.L
     N ~ switch_reg_pos.N
     switch_reg_pos.Vp ~ float_12v_positive.power_in.voltage_positive
@@ -138,4 +158,9 @@ module BenouEurorackPsu:
     switch_reg_5v.Vn ~ float_5v_positive.power_in.voltage_negative
     float_5v_positive.power_out.voltage_positive ~ V5p
     float_5v_positive.power_out.voltage_negative ~ V0
+
+    v12p_term ~ V12p
+    v12n_term ~ V12n
+    v5p_term ~ V5p
+    v0_term ~ V0
 

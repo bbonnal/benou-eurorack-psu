@@ -1,0 +1,11 @@
+component Output_Screw_Terminal_T34001:
+    # component T34001
+    footprint = "CONN-TH_T34001"
+    lcsc_id = "C481448"
+    mpn = "C481448"
+    # pins
+    signal conn ~ pin 1
+    conn ~ pin 2
+    conn ~ pin 3
+    conn ~ pin 4
+

@@ -1,0 +1,8 @@
+component Input_Spade_63849_1:
+    # component 63849-1
+    footprint = "CONN-TH_63849-1"
+    lcsc_id = "C86469"
+    mpn = "C86469"
+    # pins
+    signal conn ~ pin 1
+
