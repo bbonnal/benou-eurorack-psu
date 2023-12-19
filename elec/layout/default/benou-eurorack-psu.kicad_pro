@@ -215,7 +215,7 @@
     "last_paths": {
       "gencad": "",
       "idf": "",
-      "netlist": "../../../build/default/benou-eurorack-psu.net",
+      "netlist": "../../../build/default/BenouEurorackPsu.net",
       "specctra_dsn": "",
       "step": "",
       "vrml": ""

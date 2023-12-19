@@ -1,0 +1,13 @@
+component LT3083EQ_PBF:
+    # component LT3083EQ#PBF
+    footprint = "DD-PAK-5_L10.2-W8.9-P1.70-LS14.0-BR"
+    lcsc_id = "C459910"
+    mpn = "C459910"
+    # pins
+    signal NC ~ pin 1
+    signal SET ~ pin 2
+    signal OUT ~ pin 3
+    signal VCONTROL ~ pin 4
+    signal IN ~ pin 5
+    OUT ~ pin 6
+
