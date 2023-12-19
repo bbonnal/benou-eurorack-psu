@@ -2,6 +2,12 @@ import Resistor from "generics/resistors.ato"
 import Capacitor from "generics/capacitors.ato"
 import Diode from "generics/diodes.ato"
 import LT3083EQ_PBF from "LT3083EQ#PBF.ato"
+import Power from "generics/interfaces.ato"
+import ES3J_C241736 from "ES3J_C241736.ato"
+
+interface FloatPowerInterface:
+    signal voltage_positive
+    signal voltage_negative
 
 component PWR263S_35_R500J:
 
@@ -14,28 +20,68 @@ component PWR263S_35_R500J:
 
 module FloatLdo:
 
-    signal vcc
-    signal gnd
+    power_in = new FloatPowerInterface
+    power_out = new FloatPowerInterface
 
+    power_in.voltage_negative ~ power_out.voltage_negative
+
+    r_in_shunt1 = new PWR263S_35_R500J
+    r_in_shunt2 = new PWR263S_35_R500J
+
+    r_in_shunt1.value = "0.5R"
+    r_in_shunt2.value = "0.5R"
+
+    r_set = new Resistor
+    r_set.footprint = "R1206"
+    c_set = new Capacitor
+    c_set.footprint = "C0805"
+
+    c_set.value = "10pF"
+
+
+    ldo = new LT3083EQ_PBF
+
+    #diodes to prevent bacward currents throught the ldo due to floating during startup
+    d_protect_pos = new ES3J_C241736
+    d_protect_neg = new ES3J_C241736
+
+    #power input through shunts
+    power_in.voltage_positive ~ r_in_shunt1.p1
+    r_in_shunt1.p2 ~ r_in_shunt2.p1
+    r_in_shunt2.p2 ~ ldo.IN
+
+    #direct power input for internal current source
+    power_in.voltage_positive ~ ldo.VCONTROL
+
+    #voltage output setting
+    ldo.SET ~ r_set.p1
+    ldo.SET ~ c_set.p1
+    r_set.p2 ~ power_in.voltage_negative
+    c_set.p2 ~ power_in.voltage_negative
+    
+    #anti backwards current diodes
+    d_protect_pos.CATODE ~ldo.IN
+    d_protect_pos.ANODE ~ ldo.OUT
+
+    d_protect_neg.CATODE ~ ldo.OUT
+    d_protect_neg.ANODE ~ power_out.voltage_negative
+
+
+
+
+
+module FloatLdo_5V from FloatLdo:
+
+    r_set.value ="100k"
+
+module FloatLdo_12V from FloatLdo:
+
+    r_set.value ="240k"
 
 
 module BenouEurorackPsu:
 
 
-    signal vcc
-    signal gnd
+    float_12v_positive = new FloatLdo_12V
 
-    r1 = new Resistor
-    r1.footprint = "R0402"
-    r1.value = "100R"
-
-    ldo12p = new LT3083EQ_PBF
-
-    r_in_shunt1 = new PWR263S_35_R500J
-
-
-    vcc ~ r1.p1
-    gnd ~ r1.p2
-
-
-    # start here!
+    float_12v_negative = new FloatLdo_12V
