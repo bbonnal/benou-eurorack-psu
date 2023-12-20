@@ -28,6 +28,6 @@
   (model "/home/benou/Documents/atopile-ws/benou-eurorack-psu/elec/footprints/footprints.3dshapes/PSK-30D-9.stp"
 		(offset (xyz -1.570 -0.000 -0.000))
 		(scale (xyz 1 1 1))
-		(rotate (xyz 0 0 270))
+		(rotate (xyz -90 0 180))
 	)
 )

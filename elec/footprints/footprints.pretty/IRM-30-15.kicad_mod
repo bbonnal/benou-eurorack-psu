@@ -24,4 +24,9 @@
   (fp_line (start 35.0 -19.75) (end 35.0 19.75) (layer F.CrtYd) (width 0.05))
   (fp_line (start 35.0 19.75) (end -35.0 19.75) (layer F.CrtYd) (width 0.05))
   (fp_line (start -35.0 19.75) (end -35.0 -19.75) (layer F.CrtYd) (width 0.05))
+  (model "/home/benou/Documents/atopile-ws/benou-eurorack-psu/elec/footprints/footprints.3dshapes/IRM-30-15.stp"
+		(offset (xyz -1.570 -0.000 -0.000))
+		(scale (xyz 1 1 1))
+		(rotate (xyz -90 0 180))
+	)
 )
