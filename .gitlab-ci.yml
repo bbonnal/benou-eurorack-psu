@@ -20,8 +20,8 @@ build-gerbers-default:
     - kicad-cli pcb export drill -o gerbers/ src/*.kicad_pcb
     - zip "gerbers-$CI_COMMIT_SHORT_SHA.zip" gerbers/*
 
-    # Export the drcs
-    - kicad-cli pcb drc src/*.kicad_pcb
+    # Export the drcs, currently broken feature in kicad
+    # - kicad-cli pcb drc src/*.kicad_pcb
 
     # position files need some massaging for JLCPCB
     - kicad-cli pcb export pos --format csv --units mm --use-drill-file-origin -o $CI_COMMIT_SHORT_SHA-pos.csv src/*.kicad_pcb
