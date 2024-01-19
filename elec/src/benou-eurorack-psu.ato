@@ -62,7 +62,7 @@ module BenouEurorackPsu:
 
     L_term.conn ~ L
     N_term.conn ~ N
-    PE_term.conn ~ PE 
+    PE_term.conn ~ PE
 
 
     L ~ switch_reg_pos.L
@@ -90,4 +90,3 @@ module BenouEurorackPsu:
     v12n_term.conn ~ V12n
     v5p_term.conn ~ V5p
     v0_term.conn ~ V0
-

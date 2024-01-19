@@ -1,4 +1,4 @@
-ato-version: ^0.1.7
+ato-version: ^0.2.1
 builds:
   default:
     entry: elec/src/benou-eurorack-psu.ato:BenouEurorackPsu
