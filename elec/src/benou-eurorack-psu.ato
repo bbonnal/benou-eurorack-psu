@@ -4,8 +4,8 @@ import Diode from "generics/diodes.ato"
 import FloatPower from "generics/interfaces.ato"
 import Input_Spade_63849_1 from "63849-1.ato"
 import Output_Screw_Terminal_T34001 from "T34001.ato"
-import LDOFloat12V from "regulators/regulators.ato"
-import LDOFloat5V from "regulators/regulators.ato"
+import LDOFloat12V from "float_ldo.ato"
+import LDOFloat5V from "float_ldo.ato"
 
 
 #definition of the AC/DC switching regulators
@@ -16,6 +16,7 @@ component IRM_30_15:
     signal Vp ~ pin 3
     signal Vn ~ pin 4
     footprint = "IRM-30-15"
+    mpn = "IRM-30-15"
 
 component PSK_30D_9:
 
@@ -24,7 +25,7 @@ component PSK_30D_9:
     signal Vp ~ pin 3
     signal Vn ~ pin 4
     footprint = "PSK-30D-9"
-
+    mpn = "PSK-30D-9"
 
 
 
