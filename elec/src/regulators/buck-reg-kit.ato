@@ -1,0 +1,147 @@
+import Capacitor from "generics/capacitor.ato"
+import Resistor from "generics/resistor.ato"
+import ShottkyDiode from "generics/diode.ato"
+import Inductor from "generics/inductor.ato"
+import VDiv from "generics/vdiv.ato"
+import Power from "generics/interfaces.ato"
+
+module Buck:
+    power_in = new Power
+    power_out = new Power
+    signal gnd
+
+    power_in.gnd ~ power_out.gnd
+    power_in.gnd ~ gnd
+
+component _LMR16030SDDAR:
+    # component LMR16030SDDAR
+    footprint = "SO-8_L4.9-W3.9-P1.27-LS6.0-BL-EP"
+    lcsc_id = "C136648"
+    mpn = "C136648"
+    # pins
+    signal BOOT ~ pin 1
+    signal VIN ~ pin 2
+    signal EN ~ pin 3
+    signal RT_SYNC ~ pin 4
+    signal FB ~ pin 5
+    signal SS_or_PGOOD ~ pin 6
+    signal GND ~ pin 7
+    signal SW ~ pin 8
+    signal EP ~ pin 9
+
+component _FXL0630_100_M from Inductor:
+    # component FXL0630-100-M
+    footprint = "IND-SMD_L7.3-W6.8"
+    lcsc_id = "C167223"
+    mpn = "C167223"
+    # pins
+    signal _2 ~ pin 2
+    signal _1 ~ pin 1
+
+component _SS210 from ShottkyDiode:
+    # component SS210
+    footprint = "SMA_L4.3-W2.6-LS5.2-RD"
+    lcsc_id = "C14996"
+    mpn = "C14996"
+    # pins
+    anode ~ pin 2
+    cathode ~ pin 1
+
+# A configurable cap grid would be sweet, or maybe some hardcoded options
+module Caps2s2p from Capacitor:
+    C11 = new Capacitor
+    C12 = new Capacitor
+    C21 = new Capacitor
+    C22 = new Capacitor
+    power = new Power
+
+    C11.footprint = "C0805"
+    C11.value = 10uF +/- 20%
+    C11.voltage = 50V
+    C12.footprint = "C0805"
+    C12.value = 10uF +/- 20%
+    C12.voltage = 50V
+    C21.footprint = "C0805"
+    C21.value = 10uF +/- 20%
+    C21.voltage = 50V
+    C22.footprint = "C0805"
+    C22.value = 10uF +/- 20%
+    C22.voltage = 50V
+
+    p1 ~ power.vcc; p1 ~ C11.p1; p1 ~ C12.p1
+    C11.p2 ~ C21.p1; C12.p2 ~ C22.p1
+    p2 ~ power.gnd; p2 ~ C21.p2; p2 ~ C22.p2
+
+module Caps1s4p from Capacitor:
+    C11 = new Capacitor
+    C12 = new Capacitor
+    C13 = new Capacitor
+    C14 = new Capacitor
+    power = new Power
+
+    C11.footprint = "C1206"
+    C11.value = 47uF +/- 20%
+    C11.voltage = 10V
+    C12.footprint = "C1206"
+    C12.value = 47uF +/- 20%
+    C12.voltage = 10V
+    C13.footprint = "C1206"
+    C13.value = 47uF +/- 20%
+    C13.voltage = 10V
+    C14.footprint = "C1206"
+    C14.value = 47uF +/- 20%
+    C14.voltage = 10V
+
+    p1 ~ power.vcc; p1 ~ C11.p1; p1 ~ C12.p1; p1 ~ C13.p1; p1 ~ C14.p1
+    p2 ~ power.gnd; p2 ~ C11.p2; p2 ~ C12.p2; p2 ~ C13.p2; p2 ~ C14.p2
+
+module _BuckKit from Buck:
+    buck_ic = new _LMR16030SDDAR
+    buck_ic.VIN ~ power_in.vcc
+    buck_ic.GND ~ gnd
+    buck_ic.EP ~ gnd
+
+    ind     = new _FXL0630_100_M
+    ind.p1 ~ buck_ic.SW
+    ind.p2 ~ power_out.vcc
+
+    C_input = new Caps2s2p
+    C_input.power ~ power_in
+
+    C_output = new Caps1s4p
+    C_output.power ~ power_out
+
+    C_bootstrap = new Capacitor
+    C_bootstrap.value = 100nF +/- 20%
+    C_bootstrap.voltage = 16V
+    C_bootstrap.footprint = "C0603"
+    C_bootstrap.dielectric = "X7R"
+    C_bootstrap.p1 ~ buck_ic.BOOT
+    C_bootstrap.p2 ~ buck_ic.SW
+
+    R_sync = new Resistor
+    R_sync.value = 56k +/- 5%
+    R_sync.footprint = "R0603"
+    R_sync.p1 ~ buck_ic.RT_SYNC
+    R_sync.p2 ~ gnd
+
+    C_pgood = new Capacitor
+    C_pgood.value = 100nF +/- 20%
+    C_pgood.voltage = 16V
+    C_pgood.footprint = "C0603"
+    C_pgood.dielectric = "X7R"
+
+    D_ls = new _SS210
+    D_ls.anode ~ gnd
+    D_ls.cathode ~ buck_ic.SW
+
+    fb_div  = new VDiv
+    fb_div.top ~ power_out.vcc
+    fb_div.out ~ buck_ic.FB
+    fb_div.bottom ~ gnd
+    fb_div.r_top.footprint = "R0603"
+    fb_div.r_bottom.footprint = "R0603"
+
+module BuckKit5V from _BuckKit:
+    fb_div.r_top.value = 56k +/- 5%
+    fb_div.r_bottom.value = 10k +/- 5%

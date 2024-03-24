@@ -1,0 +1,9 @@
+component ES3J_C241736:
+    # component ES3J_C241736
+    footprint = "SMC_L6.9-W5.9-LS7.9-RD"
+    lcsc_id = "C241736"
+    mpn = "C241736"
+    # pins
+    signal CATODE ~ pin 1
+    signal ANODE ~ pin 2
+

@@ -1,0 +1,320 @@
+import Power from "generics/interfaces.ato"
+import VDiv from "generics/vdivs.ato"
+import Resistor from "generics/resistors.ato"
+import Capacitor from "generics/capacitors.ato"
+import FloatPower from "generics/interfaces.ato"
+import ES3J_C241736 from "elec/src/ES3J_C241736.ato"
+import PWR263S_35_R500J from "elec/src/PWR263S_35_R500J.ato"
+
+module _Regulator:
+    power_in = new Power
+    power_out = new Power
+
+module _AdjustableRegulator from _Regulator:
+    fb_divider = new VDiv
+    fb_divider.r_top.footprint = "R0402"
+    fb_divider.r_bottom.footprint = "R0402"
+
+module _LDOReg from _AdjustableRegulator:
+    # Vadj = 1.185V
+    # Vo = Vadj * (1 + R1 / R2) = 1.185V * (1 + R1 / R2)
+
+    ldo = new _LDK220M_R
+    power_in.vcc ~ ldo.in
+    power_in.gnd ~ ldo.gnd
+    power_in.vcc ~ ldo.en
+    ldo.out ~ power_out.vcc
+
+    # input cap
+    input_bypass = new _bypassCap
+    power_in ~ input_bypass.power
+    input_bypass.value = 1uF +/- 20%
+    input_bypass.value = 1uF +/- 20%
+    input_bypass.footprint = "C0402"
+
+    # output cap
+    output_bypass = new _bypassCap
+    power_out ~ output_bypass.power
+    output_bypass.value = 1uF +/- 20%
+    output_bypass.footprint = "C0402"
+
+
+    # voltage divider
+    power_out ~ fb_divider.in
+    fb_divider.out ~ ldo.adj
+
+module LDOReg5V from _LDOReg:
+    fb_divider.r_top.value = 18kohm +/- 10%
+    fb_divider.r_bottom.value = 5.1kohm +/- 10%
+
+
+module LDOReg3V3 from _LDOReg:
+    fb_divider.r_top.value = 18kohm +/- 10%
+    fb_divider.r_bottom.value = 10kohm +/- 10%
+
+
+
+module _LDOFloat:
+
+    power_in = new FloatPower
+    power_out = new FloatPower
+
+    power_in.v_neg ~ power_out.v_neg
+
+    r_in_shunt1 = new PWR263S_35_R500J
+    r_in_shunt2 = new PWR263S_35_R500J
+
+    r_in_shunt1.value = 0.5R +/- 5%
+    r_in_shunt2.value = 0.5R +/- 5%
+
+    r_set = new Resistor
+    r_set.footprint = "R0805"
+    r_set.mpn = "C865322"
+
+    c_set = new Capacitor
+    c_set.footprint = "C0805"
+    c_set.value = 10pF +/- 20%
+
+
+    # input cap
+    input_bypass = new Capacitor
+    input_bypass.value = 22uF +/- 20%
+    input_bypass.footprint = "C1206"
+    input_bypass.mpn = "C5162260"
+
+    input_bypass.p1 ~ power_in.v_pos
+    input_bypass.p2 ~ power_in.v_neg
+
+    # output cap
+    output_bypass = new Capacitor
+    output_bypass.value = 22uF +/- 20%
+    output_bypass.footprint = "C1206"
+    output_bypass.mpn = "C5162260"
+    output_bypass.p1 ~ power_out.v_pos
+    output_bypass.p2 ~ power_out.v_neg
+
+
+    ldo = new _LT3083EQ_PBF
+
+    #diodes to prevent bacward currents throught the ldo due to floating during startup
+    d_protect_pos = new ES3J_C241736
+    d_protect_neg = new ES3J_C241736
+
+    #power input through shunts
+    power_in.v_pos ~ r_in_shunt1.p1
+    r_in_shunt1.p2 ~ r_in_shunt2.p1
+    r_in_shunt2.p2 ~ ldo.IN
+
+    #direct power input for internal current source
+    power_in.v_pos ~ ldo.VCONTROL
+
+
+    #voltage output setting
+    ldo.SET ~ r_set.p1
+    ldo.SET ~ c_set.p1
+    r_set.p2 ~ power_in.v_neg
+    c_set.p2 ~ power_in.v_neg
+
+    #anti backwards current diodes
+    d_protect_pos.CATODE ~ldo.IN
+    d_protect_pos.ANODE ~ ldo.OUT
+
+    d_protect_neg.CATODE ~ ldo.OUT
+    d_protect_neg.ANODE ~ power_out.v_neg
+
+    ldo.OUT ~ power_out.v_pos
+
+
+module LDOFloat5V from _LDOFloat:
+
+    r_set.value = 100kohm +/- 5%
+    r_set.mpn = "C122537"
+
+module LDOFloat12V from _LDOFloat:
+
+    r_set.value =243kohm +/- 5%
+    r_set.mpn = "C865322"
+
+
+
+
+module _BoostReg from _AdjustableRegulator:
+    # 1.2A max output current, 1.1MHz switching frequency, Vin 2-5.5V, ~90% efficiency
+    # Designed to supply 3.3V or 5V from a single cell LiPo battery, AAA/AA or coin cell battery
+    ic = new _PAM2401SCADJ
+    inductor = new _SWPA3015S2R2MT
+
+    # connect power input
+    ic.vin ~ power_in.vcc
+    ic.gnd ~ power_in.gnd
+
+    # connect power output
+    ic.out ~ power_out.vcc
+    ic.gnd ~ power_out.gnd
+
+    # connect inductor
+    ic.lx ~ inductor.p1
+    ic.vin ~ inductor.p2
+
+    # enable resistor
+    en_resistor = new Resistor
+    en_resistor.p1 ~ ic.en
+    en_resistor.p2 ~ power_in.vcc
+    en_resistor.value = 750kohm +/- 5%
+    en_resistor.footprint = "R0402"
+
+    # feedback divider
+    fb_divider.in ~ power_out
+    fb_divider.out ~ ic.fb
+
+    # input capacitor
+    input_cap_1 = new _bypassCap
+    input_cap_2 = new _bypassCap
+    power_in ~ input_cap_1.power
+    power_in ~ input_cap_2.power
+
+    # output capacitor
+    output_cap_1 = new _bypassCap
+    output_cap_2 = new _bypassCap
+    output_cap_3 = new _bypassCap
+    output_cap_4 = new _bypassCap
+    power_out ~ output_cap_1.power
+    power_out ~ output_cap_2.power
+    power_out ~ output_cap_3.power
+    power_out ~ output_cap_4.power
+
+module BoostReg5V from _BoostReg:
+    fb_divider.r_top.value = 750kohm +/- 5%
+    fb_divider.r_bottom.value = 100kohm +/- 5%
+
+
+module _BuckReg from _AdjustableRegulator:
+    #1.2A max output current, 1.1MHz switching frequency, Vin 4-40V, ~90% efficiency
+    ic = new _LV2842XLVDDCR
+    power_in.vcc ~ ic.vin
+    power_in.gnd ~ ic.gnd
+    power_out.gnd ~ ic.gnd
+
+    # connect shdn to vin to enable
+    power_in.vcc ~ ic.shdn
+
+    # input caps
+    input_cap = new _bypassCap
+    power_in ~ input_cap.power
+
+    # diode
+    diode = new _DIODE_1N5819WS
+    diode.cathode ~ ic.sw
+    diode.anode ~ power_out.gnd
+
+    inductor = new _CPY201212T_100M_NP
+    ic.sw ~ inductor.p1
+    power_out.vcc ~ inductor.p2
+
+    # output caps
+    output_cap_1 = new _bypassCap
+    output_cap_2 = new _bypassCap
+
+    # fb divider
+    power_out ~ fb_divider.in
+    ic.fb ~ fb_divider.out
+
+    #Boost cap BST pin
+    boot_cap = new Capacitor
+    boot_cap.value = 100nF +/- 20%
+    boot_cap.footprint = "C0402"
+    ic.cb ~ boot_cap.p1
+    ic.sw ~ boot_cap.p2
+
+module BuckReg12V from _BuckReg:
+    # A subclass of the buck regulator that sets the output voltage to 12V
+    # Feedback voltage is 0.765V for the LV2842XLVDDCR
+    # 0.765V / 12V = 0.06375
+    # The vdiv with a ratio of 0.0639, which is ~11.9V
+    fb_divider.r_top.value = 147k  +/- 5%
+    fb_divider.r_bottom.value = 10k  +/- 5%
+
+module BuckReg5V from _BuckReg:
+    fb_divider.r_top.value = 56kohm +/- 5%
+    fb_divider.r_bottom.value = 10kohm +/- 5%
+    fb_divider.r_top.value = 56kohm +/- 5%
+    fb_divider.r_bottom.value = 10kohm +/- 5%
+
+module BuckReg3V3 from _BuckReg:
+    fb_divider.r_top.value = 84.5kohm +/- 5%
+    fb_divider.r_bottom.value = 27kohm +/- 5%
+
+component _LV2842XLVDDCR:
+    signal cb ~ pin 1
+    signal gnd ~ pin 2
+    signal fb ~ pin 3
+    signal shdn ~ pin 4
+    signal vin ~ pin 5
+    signal sw ~ pin 6
+
+    footprint = "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
+    mpn = "C225807"
+
+component _DIODE_1N5819WS:
+    signal anode ~ pin 2
+    signal cathode ~ pin 1
+
+    footprint = "SOD-323_L1.8-W1.3-LS2.5-RD"
+    mpn = "C191023"
+
+component _CPY201212T_100M_NP:
+    # 400mA 10uH ±20% 0805 Inductors (SMD) ROHS Copy
+    signal p1 ~ pin 1
+    signal p2 ~ pin 2
+    footprint = "L0805"
+    mpn = "C285963"
+
+component _PAM2401SCADJ:
+    signal lx ~ pin 1
+    signal en ~ pin 2
+    signal vin ~ pin 3
+    signal gnd ~ pin 4
+    signal fb ~ pin 5
+    signal rset ~ pin 6
+    signal out ~ pin 7
+    gnd ~ pin 8
+
+    mpn="C508238"
+    footprint="MSOP-8_L3.0-W3.0-P0.65-LS4.9-BL"
+
+component _SWPA3015S2R2MT:
+    signal p1 ~ pin 1
+    signal p2 ~ pin 2
+    mpn = "C43389"
+    footprint = "IND-SMD_L3.0-W3.0"
+
+module _bypassCap from Capacitor:
+    power = new Power
+    power.vcc ~ p1
+    power.gnd ~ p2
+    footprint = "C0805"
+    value = 10uF +/- 20%
+
+component _LDK220M_R:
+    signal in ~ pin 1
+    signal gnd ~ pin 2
+    signal en ~ pin 3
+    signal out ~ pin 5
+    signal adj ~ pin 4
+
+    footprint = "SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL"
+    mpn = "C443854"
+
+component _LT3083EQ_PBF:
+    # component LT3083EQ#PBF
+    footprint = "DD-PAK-5_L10.2-W8.9-P1.70-LS14.0-BR"
+    lcsc_id = "C459910"
+    mpn = "C459910"
+    # pins
+    signal NC ~ pin 1
+    signal SET ~ pin 2
+    signal OUT ~ pin 3
+    signal VCONTROL ~ pin 4
+    signal IN ~ pin 5
+    OUT ~ pin 6
+

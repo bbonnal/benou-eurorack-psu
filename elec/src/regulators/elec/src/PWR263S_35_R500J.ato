@@ -1,0 +1,7 @@
+component PWR263S_35_R500J:
+
+    signal p1 ~ pin 1
+    signal p2 ~ pin 3
+    signal sink ~ pin 2
+
+    footprint = "TO-263-2"

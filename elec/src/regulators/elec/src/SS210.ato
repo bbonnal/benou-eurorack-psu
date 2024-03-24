@@ -1,0 +1,9 @@
+component SS210:
+    # component SS210
+    footprint = "SMA_L4.3-W2.6-LS5.2-RD"
+    lcsc_id = "C14996"
+    mpn = "C14996"
+    # pins
+    signal A ~ pin 2
+    signal K ~ pin 1
+

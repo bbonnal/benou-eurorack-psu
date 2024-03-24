@@ -1,0 +1,11 @@
+ato-version: ^0.2.0
+
+builds:
+  default:
+    entry: "buck-reg-kit.ato:BuckKit5V"
+
+  ldo:
+    entry: "regulators.ato:LDOReg3V3"
+
+dependencies:
+- generics

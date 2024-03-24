@@ -1,0 +1,9 @@
+component FXL0630_100_M:
+    # component FXL0630-100-M
+    footprint = "IND-SMD_L7.3-W6.8"
+    lcsc_id = "C167223"
+    mpn = "C167223"
+    # pins
+    signal _2 ~ pin 2
+    signal _1 ~ pin 1
+

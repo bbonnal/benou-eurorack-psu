@@ -1,0 +1,16 @@
+component LMR16030SDDAR:
+    # component LMR16030SDDAR
+    footprint = "SO-8_L4.9-W3.9-P1.27-LS6.0-BL-EP"
+    lcsc_id = "C136648"
+    mpn = "C136648"
+    # pins
+    signal BOOT ~ pin 1
+    signal VIN ~ pin 2
+    signal EN ~ pin 3
+    signal RT_SYNC ~ pin 4
+    signal FB ~ pin 5
+    signal SS_or_PGOOD ~ pin 6
+    signal GND ~ pin 7
+    signal SW ~ pin 8
+    signal EP ~ pin 9
+
