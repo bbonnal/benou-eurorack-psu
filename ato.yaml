@@ -1,9 +1,6 @@
-ato-version: v0.2.0
+ato-version: ^0.2.9
 builds:
   default:
     entry: elec/src/benou-eurorack-psu.ato:BenouEurorackPsu
 dependencies:
-- name: regulators
-  version_spec: ^v2.0.5
-  link_broken: false
-  path:
+- generics
